@@ -401,6 +401,7 @@ tuned_model
 
 It appears as though the tuned model worked better. The tuned model has an accuracy of 99.21%, whereas the basic model has an accuracy of 99.1%. Moreover, the tuned model has a lower out-of-bag error rate of 0.61% than the basic model (out-of-bag error rate of 0.81%).  
 
+## Cross-Validation
 Overall, it appears as though the tuned model might be better for a final model, but its performance could just be a result of overfitting. To check this, we can apply both models to the test set and see which one performs better.
 
 
