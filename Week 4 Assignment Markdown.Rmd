@@ -27,14 +27,14 @@ The data used in this project are from [this website](http://web.archive.org/web
 The goal of this project was to build a model that would correctly predict which class of exercise ("classe" in the data set) was being performed based on the information collected by the sensors participants were wearing on different parts of their body. 
 
 ## Initial setup and downloading of data
-First, we need to load the packages necessary for data processing and visualization and check the data.
+First, we need to load the packages necessary for data processing and check the data.
 ```{r load_libraries, message=FALSE}
 library(tidyverse)
 library(caret)
 ```
 ```{r load_data}
 full_data_set <- read.csv('pml-training.csv', na.strings = c("NA", "#DIV/0!"))
-
+names(full_data_set)
 dim(full_data_set) 
 ```
 
@@ -50,14 +50,16 @@ length(unique(full_data_set$X))
 unique(full_data_set$user_name)
 ```
 
-This shows us that the X column is just a unique trial number; this does not contain information that would be helpful in a prediction model. In addition, the user_name variable refers to the identities of the six participants. Again, this information would not be helpful in predicting classes of exercise. These two columns can be removed. Finally, the next five columns contain information about trial time, which should not be stringly related to the type of exercise performed. These columns can all be removed from the data set.
+This shows us that the X column is just a unique trial number; this does not contain information that would be helpful in a prediction model. In addition, the user_name variable refers to the identities of the six participants. Again, this information would not be helpful in predicting classes of exercise. These two columns can be removed. Finally, the next five columns contain information about trial time, which should not be strongly related to the type of exercise performed. These columns can all be removed from the data set.
 
 ```{r remove_cols}
 data_set_cols_rm <- full_data_set[,8:ncol(full_data_set)]
 dim(data_set_cols_rm)
+str(full_data_set[,1:20]) ## look at the structure for the first 20 remaining cols
+summary(full_data_set[,1:20]) 
 ```
 
-Of the columns left, many of them appear to contain NA values. Given that there are 153 columns, it might be useful to remove those that contain mostly NA values, as they won't be helpful for the final model.
+Of the columns left, many of them appear to contain NA values. Given that there are 153 columns, it might be useful to remove those that contain mostly NA values, as they won't be helpful for building our model.
 
 ```{r remove_NAs}
 na_vals <- sapply(data_set_cols_rm, function(x) sum(is.na(x)))

@@ -196,12 +196,92 @@ summary {
 </div>
 <div id="initial-setup-and-downloading-of-data" class="section level2">
 <h2>Initial setup and downloading of data</h2>
-<p>First, we need to load the packages necessary for data processing and visualization and check the data.</p>
+<p>First, we need to load the packages necessary for data processing and check the data.</p>
 <pre class="r"><code>library(tidyverse)
 library(caret)</code></pre>
 <pre class="r"><code>full_data_set &lt;- read.csv(&#39;pml-training.csv&#39;, na.strings = c(&quot;NA&quot;, &quot;#DIV/0!&quot;))
-
-dim(full_data_set) </code></pre>
+names(full_data_set)</code></pre>
+<pre><code>##   [1] &quot;X&quot;                        &quot;user_name&quot;               
+##   [3] &quot;raw_timestamp_part_1&quot;     &quot;raw_timestamp_part_2&quot;    
+##   [5] &quot;cvtd_timestamp&quot;           &quot;new_window&quot;              
+##   [7] &quot;num_window&quot;               &quot;roll_belt&quot;               
+##   [9] &quot;pitch_belt&quot;               &quot;yaw_belt&quot;                
+##  [11] &quot;total_accel_belt&quot;         &quot;kurtosis_roll_belt&quot;      
+##  [13] &quot;kurtosis_picth_belt&quot;      &quot;kurtosis_yaw_belt&quot;       
+##  [15] &quot;skewness_roll_belt&quot;       &quot;skewness_roll_belt.1&quot;    
+##  [17] &quot;skewness_yaw_belt&quot;        &quot;max_roll_belt&quot;           
+##  [19] &quot;max_picth_belt&quot;           &quot;max_yaw_belt&quot;            
+##  [21] &quot;min_roll_belt&quot;            &quot;min_pitch_belt&quot;          
+##  [23] &quot;min_yaw_belt&quot;             &quot;amplitude_roll_belt&quot;     
+##  [25] &quot;amplitude_pitch_belt&quot;     &quot;amplitude_yaw_belt&quot;      
+##  [27] &quot;var_total_accel_belt&quot;     &quot;avg_roll_belt&quot;           
+##  [29] &quot;stddev_roll_belt&quot;         &quot;var_roll_belt&quot;           
+##  [31] &quot;avg_pitch_belt&quot;           &quot;stddev_pitch_belt&quot;       
+##  [33] &quot;var_pitch_belt&quot;           &quot;avg_yaw_belt&quot;            
+##  [35] &quot;stddev_yaw_belt&quot;          &quot;var_yaw_belt&quot;            
+##  [37] &quot;gyros_belt_x&quot;             &quot;gyros_belt_y&quot;            
+##  [39] &quot;gyros_belt_z&quot;             &quot;accel_belt_x&quot;            
+##  [41] &quot;accel_belt_y&quot;             &quot;accel_belt_z&quot;            
+##  [43] &quot;magnet_belt_x&quot;            &quot;magnet_belt_y&quot;           
+##  [45] &quot;magnet_belt_z&quot;            &quot;roll_arm&quot;                
+##  [47] &quot;pitch_arm&quot;                &quot;yaw_arm&quot;                 
+##  [49] &quot;total_accel_arm&quot;          &quot;var_accel_arm&quot;           
+##  [51] &quot;avg_roll_arm&quot;             &quot;stddev_roll_arm&quot;         
+##  [53] &quot;var_roll_arm&quot;             &quot;avg_pitch_arm&quot;           
+##  [55] &quot;stddev_pitch_arm&quot;         &quot;var_pitch_arm&quot;           
+##  [57] &quot;avg_yaw_arm&quot;              &quot;stddev_yaw_arm&quot;          
+##  [59] &quot;var_yaw_arm&quot;              &quot;gyros_arm_x&quot;             
+##  [61] &quot;gyros_arm_y&quot;              &quot;gyros_arm_z&quot;             
+##  [63] &quot;accel_arm_x&quot;              &quot;accel_arm_y&quot;             
+##  [65] &quot;accel_arm_z&quot;              &quot;magnet_arm_x&quot;            
+##  [67] &quot;magnet_arm_y&quot;             &quot;magnet_arm_z&quot;            
+##  [69] &quot;kurtosis_roll_arm&quot;        &quot;kurtosis_picth_arm&quot;      
+##  [71] &quot;kurtosis_yaw_arm&quot;         &quot;skewness_roll_arm&quot;       
+##  [73] &quot;skewness_pitch_arm&quot;       &quot;skewness_yaw_arm&quot;        
+##  [75] &quot;max_roll_arm&quot;             &quot;max_picth_arm&quot;           
+##  [77] &quot;max_yaw_arm&quot;              &quot;min_roll_arm&quot;            
+##  [79] &quot;min_pitch_arm&quot;            &quot;min_yaw_arm&quot;             
+##  [81] &quot;amplitude_roll_arm&quot;       &quot;amplitude_pitch_arm&quot;     
+##  [83] &quot;amplitude_yaw_arm&quot;        &quot;roll_dumbbell&quot;           
+##  [85] &quot;pitch_dumbbell&quot;           &quot;yaw_dumbbell&quot;            
+##  [87] &quot;kurtosis_roll_dumbbell&quot;   &quot;kurtosis_picth_dumbbell&quot; 
+##  [89] &quot;kurtosis_yaw_dumbbell&quot;    &quot;skewness_roll_dumbbell&quot;  
+##  [91] &quot;skewness_pitch_dumbbell&quot;  &quot;skewness_yaw_dumbbell&quot;   
+##  [93] &quot;max_roll_dumbbell&quot;        &quot;max_picth_dumbbell&quot;      
+##  [95] &quot;max_yaw_dumbbell&quot;         &quot;min_roll_dumbbell&quot;       
+##  [97] &quot;min_pitch_dumbbell&quot;       &quot;min_yaw_dumbbell&quot;        
+##  [99] &quot;amplitude_roll_dumbbell&quot;  &quot;amplitude_pitch_dumbbell&quot;
+## [101] &quot;amplitude_yaw_dumbbell&quot;   &quot;total_accel_dumbbell&quot;    
+## [103] &quot;var_accel_dumbbell&quot;       &quot;avg_roll_dumbbell&quot;       
+## [105] &quot;stddev_roll_dumbbell&quot;     &quot;var_roll_dumbbell&quot;       
+## [107] &quot;avg_pitch_dumbbell&quot;       &quot;stddev_pitch_dumbbell&quot;   
+## [109] &quot;var_pitch_dumbbell&quot;       &quot;avg_yaw_dumbbell&quot;        
+## [111] &quot;stddev_yaw_dumbbell&quot;      &quot;var_yaw_dumbbell&quot;        
+## [113] &quot;gyros_dumbbell_x&quot;         &quot;gyros_dumbbell_y&quot;        
+## [115] &quot;gyros_dumbbell_z&quot;         &quot;accel_dumbbell_x&quot;        
+## [117] &quot;accel_dumbbell_y&quot;         &quot;accel_dumbbell_z&quot;        
+## [119] &quot;magnet_dumbbell_x&quot;        &quot;magnet_dumbbell_y&quot;       
+## [121] &quot;magnet_dumbbell_z&quot;        &quot;roll_forearm&quot;            
+## [123] &quot;pitch_forearm&quot;            &quot;yaw_forearm&quot;             
+## [125] &quot;kurtosis_roll_forearm&quot;    &quot;kurtosis_picth_forearm&quot;  
+## [127] &quot;kurtosis_yaw_forearm&quot;     &quot;skewness_roll_forearm&quot;   
+## [129] &quot;skewness_pitch_forearm&quot;   &quot;skewness_yaw_forearm&quot;    
+## [131] &quot;max_roll_forearm&quot;         &quot;max_picth_forearm&quot;       
+## [133] &quot;max_yaw_forearm&quot;          &quot;min_roll_forearm&quot;        
+## [135] &quot;min_pitch_forearm&quot;        &quot;min_yaw_forearm&quot;         
+## [137] &quot;amplitude_roll_forearm&quot;   &quot;amplitude_pitch_forearm&quot; 
+## [139] &quot;amplitude_yaw_forearm&quot;    &quot;total_accel_forearm&quot;     
+## [141] &quot;var_accel_forearm&quot;        &quot;avg_roll_forearm&quot;        
+## [143] &quot;stddev_roll_forearm&quot;      &quot;var_roll_forearm&quot;        
+## [145] &quot;avg_pitch_forearm&quot;        &quot;stddev_pitch_forearm&quot;    
+## [147] &quot;var_pitch_forearm&quot;        &quot;avg_yaw_forearm&quot;         
+## [149] &quot;stddev_yaw_forearm&quot;       &quot;var_yaw_forearm&quot;         
+## [151] &quot;gyros_forearm_x&quot;          &quot;gyros_forearm_y&quot;         
+## [153] &quot;gyros_forearm_z&quot;          &quot;accel_forearm_x&quot;         
+## [155] &quot;accel_forearm_y&quot;          &quot;accel_forearm_z&quot;         
+## [157] &quot;magnet_forearm_x&quot;         &quot;magnet_forearm_y&quot;        
+## [159] &quot;magnet_forearm_z&quot;         &quot;classe&quot;</code></pre>
+<pre class="r"><code>dim(full_data_set) </code></pre>
 <pre><code>## [1] 19622   160</code></pre>
 <p>The data set contains 19622 data points, with 160 columns. The last column, “classe” is the one we are hoping to predict. Most of the other columns appear to contain sensor information.</p>
 <pre class="r"><code>length(unique(full_data_set$X)) </code></pre>
@@ -209,11 +289,82 @@ dim(full_data_set) </code></pre>
 <pre class="r"><code>unique(full_data_set$user_name)</code></pre>
 <pre><code>## [1] carlitos pedro    adelmo   charles  eurico   jeremy  
 ## Levels: adelmo carlitos charles eurico jeremy pedro</code></pre>
-<p>This shows us that the X column is just a unique trial number; this does not contain information that would be helpful in a prediction model. In addition, the user_name variable refers to the identities of the six participants. Again, this information would not be helpful in predicting classes of exercise. These two columns can be removed. Finally, the next five columns contain information about trial time, which should not be stringly related to the type of exercise performed. These columns can all be removed from the data set.</p>
+<p>This shows us that the X column is just a unique trial number; this does not contain information that would be helpful in a prediction model. In addition, the user_name variable refers to the identities of the six participants. Again, this information would not be helpful in predicting classes of exercise. These two columns can be removed. Finally, the next five columns contain information about trial time, which should not be strongly related to the type of exercise performed. These columns can all be removed from the data set.</p>
 <pre class="r"><code>data_set_cols_rm &lt;- full_data_set[,8:ncol(full_data_set)]
 dim(data_set_cols_rm)</code></pre>
 <pre><code>## [1] 19622   153</code></pre>
-<p>Of the columns left, many of them appear to contain NA values. Given that there are 153 columns, it might be useful to remove those that contain mostly NA values, as they won’t be helpful for the final model.</p>
+<pre class="r"><code>str(full_data_set[,1:20]) ## look at the structure for the first 20 remaining cols</code></pre>
+<pre><code>## &#39;data.frame&#39;:    19622 obs. of  20 variables:
+##  $ X                   : int  1 2 3 4 5 6 7 8 9 10 ...
+##  $ user_name           : Factor w/ 6 levels &quot;adelmo&quot;,&quot;carlitos&quot;,..: 2 2 2 2 2 2 2 2 2 2 ...
+##  $ raw_timestamp_part_1: int  1323084231 1323084231 1323084231 1323084232 1323084232 1323084232 1323084232 1323084232 1323084232 1323084232 ...
+##  $ raw_timestamp_part_2: int  788290 808298 820366 120339 196328 304277 368296 440390 484323 484434 ...
+##  $ cvtd_timestamp      : Factor w/ 20 levels &quot;02/12/2011 13:32&quot;,..: 9 9 9 9 9 9 9 9 9 9 ...
+##  $ new_window          : Factor w/ 2 levels &quot;no&quot;,&quot;yes&quot;: 1 1 1 1 1 1 1 1 1 1 ...
+##  $ num_window          : int  11 11 11 12 12 12 12 12 12 12 ...
+##  $ roll_belt           : num  1.41 1.41 1.42 1.48 1.48 1.45 1.42 1.42 1.43 1.45 ...
+##  $ pitch_belt          : num  8.07 8.07 8.07 8.05 8.07 8.06 8.09 8.13 8.16 8.17 ...
+##  $ yaw_belt            : num  -94.4 -94.4 -94.4 -94.4 -94.4 -94.4 -94.4 -94.4 -94.4 -94.4 ...
+##  $ total_accel_belt    : int  3 3 3 3 3 3 3 3 3 3 ...
+##  $ kurtosis_roll_belt  : num  NA NA NA NA NA NA NA NA NA NA ...
+##  $ kurtosis_picth_belt : num  NA NA NA NA NA NA NA NA NA NA ...
+##  $ kurtosis_yaw_belt   : logi  NA NA NA NA NA NA ...
+##  $ skewness_roll_belt  : num  NA NA NA NA NA NA NA NA NA NA ...
+##  $ skewness_roll_belt.1: num  NA NA NA NA NA NA NA NA NA NA ...
+##  $ skewness_yaw_belt   : logi  NA NA NA NA NA NA ...
+##  $ max_roll_belt       : num  NA NA NA NA NA NA NA NA NA NA ...
+##  $ max_picth_belt      : int  NA NA NA NA NA NA NA NA NA NA ...
+##  $ max_yaw_belt        : num  NA NA NA NA NA NA NA NA NA NA ...</code></pre>
+<pre class="r"><code>summary(full_data_set[,1:20]) </code></pre>
+<pre><code>##        X            user_name    raw_timestamp_part_1 raw_timestamp_part_2
+##  Min.   :    1   adelmo  :3892   Min.   :1.32e+09     Min.   :   294      
+##  1st Qu.: 4906   carlitos:3112   1st Qu.:1.32e+09     1st Qu.:252912      
+##  Median : 9812   charles :3536   Median :1.32e+09     Median :496380      
+##  Mean   : 9812   eurico  :3070   Mean   :1.32e+09     Mean   :500656      
+##  3rd Qu.:14717   jeremy  :3402   3rd Qu.:1.32e+09     3rd Qu.:751891      
+##  Max.   :19622   pedro   :2610   Max.   :1.32e+09     Max.   :998801      
+##                                                                           
+##           cvtd_timestamp  new_window    num_window    roll_belt  
+##  28/11/2011 14:14: 1498   no :19216   Min.   :  1   Min.   :-29  
+##  05/12/2011 11:24: 1497   yes:  406   1st Qu.:222   1st Qu.:  1  
+##  30/11/2011 17:11: 1440               Median :424   Median :113  
+##  05/12/2011 11:25: 1425               Mean   :431   Mean   : 64  
+##  02/12/2011 14:57: 1380               3rd Qu.:644   3rd Qu.:123  
+##  02/12/2011 13:34: 1375               Max.   :864   Max.   :162  
+##  (Other)         :11007                                          
+##    pitch_belt     yaw_belt    total_accel_belt kurtosis_roll_belt
+##  Min.   :-56   Min.   :-180   Min.   : 0.0     Min.   :-2        
+##  1st Qu.:  2   1st Qu.: -88   1st Qu.: 3.0     1st Qu.:-1        
+##  Median :  5   Median : -13   Median :17.0     Median :-1        
+##  Mean   :  0   Mean   : -11   Mean   :11.3     Mean   : 0        
+##  3rd Qu.: 15   3rd Qu.:  13   3rd Qu.:18.0     3rd Qu.: 0        
+##  Max.   : 60   Max.   : 179   Max.   :29.0     Max.   :33        
+##                                                NA&#39;s   :19226     
+##  kurtosis_picth_belt kurtosis_yaw_belt skewness_roll_belt
+##  Min.   :-2          Mode:logical      Min.   :-6        
+##  1st Qu.:-1          NA&#39;s:19622        1st Qu.: 0        
+##  Median : 0                            Median : 0        
+##  Mean   : 4                            Mean   : 0        
+##  3rd Qu.: 3                            3rd Qu.: 0        
+##  Max.   :58                            Max.   : 4        
+##  NA&#39;s   :19248                         NA&#39;s   :19225     
+##  skewness_roll_belt.1 skewness_yaw_belt max_roll_belt   max_picth_belt 
+##  Min.   :-8           Mode:logical      Min.   :-94     Min.   : 3     
+##  1st Qu.:-1           NA&#39;s:19622        1st Qu.:-88     1st Qu.: 5     
+##  Median : 0                             Median : -5     Median :18     
+##  Mean   : 0                             Mean   : -7     Mean   :13     
+##  3rd Qu.: 1                             3rd Qu.: 18     3rd Qu.:19     
+##  Max.   : 7                             Max.   :180     Max.   :30     
+##  NA&#39;s   :19248                          NA&#39;s   :19216   NA&#39;s   :19216  
+##   max_yaw_belt  
+##  Min.   :-2     
+##  1st Qu.:-1     
+##  Median :-1     
+##  Mean   : 0     
+##  3rd Qu.: 0     
+##  Max.   :33     
+##  NA&#39;s   :19226</code></pre>
+<p>Of the columns left, many of them appear to contain NA values. Given that there are 153 columns, it might be useful to remove those that contain mostly NA values, as they won’t be helpful for building our model.</p>
 <pre class="r"><code>na_vals &lt;- sapply(data_set_cols_rm, function(x) sum(is.na(x)))
 unname(na_vals) ## total number of NA values in each column</code></pre>
 <pre><code>##   [1]     0     0     0     0 19226 19248 19622 19225 19248 19622 19216
