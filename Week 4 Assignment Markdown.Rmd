@@ -1,0 +1,153 @@
+---
+title: 'Prediction Assignment Write-Up: Predicting the Method of Exercise'
+output:
+  html_document:
+    keep_md: yes
+    self_contained: no
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+options(digits=2)
+```
+
+## Synopsis
+The data used in this project are from [this website](http://web.archive.org/web/20161224072740/http:/groupware.les.inf.puc-rio.br/har). Six participants were told to perform a bicep curl in five different ways:  
+
+1. Completely correctly, according to the instructions given *(Class A)*  
+
+2. Throwing their elbows forward *(Class B)*  
+
+3. Lifting the dumbell only halfway *(Class C)*  
+
+4. Lowering the dumbell only halfway *(Class D)*  
+
+5. Throwing their hips forward *(Class E)*  
+
+The goal of this project was to build a model that would correctly predict which class of exercise ("classe" in the data set) was being performed based on the information collected by the sensors participants were wearing on different parts of their body. 
+
+## Initial setup and downloading of data
+First, we need to load the packages necessary for data processing and visualization and check the data.
+```{r load_libraries, message=FALSE}
+library(tidyverse)
+library(caret)
+```
+```{r load_data}
+full_data_set <- read.csv('pml-training.csv', na.strings = c("NA", "#DIV/0!"))
+
+dim(full_data_set) 
+```
+
+```{r load_models, echo = FALSE}
+basic_model <- readRDS('basic_model.rds')
+tuned_model <- readRDS('tuned_model.rds')
+```
+
+The data set contains 19622 data points, with 160 columns. The last column, "classe" is the one we are hoping to predict. Most of the other columns appear to contain sensor information. 
+
+```{r examine_first_cols}
+length(unique(full_data_set$X)) 
+unique(full_data_set$user_name)
+```
+
+This shows us that the X column is just a unique trial number; this does not contain information that would be helpful in a prediction model. In addition, the user_name variable refers to the identities of the six participants. Again, this information would not be helpful in predicting classes of exercise. These two columns can be removed. Finally, the next five columns contain information about trial time, which should not be stringly related to the type of exercise performed. These columns can all be removed from the data set.
+
+```{r remove_cols}
+data_set_cols_rm <- full_data_set[,8:ncol(full_data_set)]
+dim(data_set_cols_rm)
+```
+
+Of the columns left, many of them appear to contain NA values. Given that there are 153 columns, it might be useful to remove those that contain mostly NA values, as they won't be helpful for the final model.
+
+```{r remove_NAs}
+na_vals <- sapply(data_set_cols_rm, function(x) sum(is.na(x)))
+unname(na_vals) ## total number of NA values in each column
+## Lots of columns have more than 19000 NA values
+## This is 97% of missing data in those columns and should probably be removed
+missingData_df <- is.na(data_set_cols_rm)
+rm_cols <- which(colSums(missingData_df) > 19000)
+final_full_set <- data_set_cols_rm[, -rm_cols]
+dim(final_full_set)
+```
+
+This leaves us with 53 columns (52 predictors) to work with!
+
+## Splitting the Data
+First, we need to split the data. Here, I have chosen to split the data into a training set, a testing set, and a final validation set (80/20/20). 
+
+```{r split_data}
+set.seed(33433)
+inBuild <- createDataPartition(y = final_full_set$classe, p = .8, list = F)
+
+## create validation data set
+validation_data <- final_full_set[-inBuild,]
+
+## create (temp) building data set
+buildData_set <- final_full_set[inBuild,]
+## separate model building set into training and testing
+inTrain <- createDataPartition(y = buildData_set$classe, p = .75, list = F)
+train_data <- buildData_set[inTrain,]
+test_data <- buildData_set[-inTrain,]
+
+## check final sets for numbers
+nrow(validation_data)
+nrow(test_data)
+nrow(train_data)
+```
+
+## Model Building
+For this problem, I have chosen to use a random forest model, as these models are good for classification problems. First, we can start with a model that uses mostly default options.
+
+```{r default_model, eval = FALSE}
+set.seed(3433)
+basic_model <- train(classe ~ ., method = 'rf', data = train_data,
+                     trControl = trainControl(method = 'cv'),
+                     number = 3)
+```
+
+Next, we can build a tuned model. For this, we can adjust the mtry parameter (that is, the number of variables that are chosen at each node) and the ntree parameter (that is, the number of trees that are grown). For mtry, we can use the square root of the number of predictors (as demonstrated [here](https://machinelearningmastery.com/tune-machine-learning-algorithms-in-r/)). For ntree, we can use 1000, which is double the default value (500) but won't take too long to run.
+
+```{r tuned_model, eval = FALSE}
+tunegrid <- expand.grid(.mtry=sqrt(ncol(train_data) - 1))
+trcontrol <- trainControl(method="repeatedcv", number=10, repeats=3)
+set.seed(3433)
+tuned_model <- train(classe ~ ., data = train_data, method = 'rf', 
+                     tuneGrid = tunegrid, 
+                     trControl = trcontrol, 
+                     ntree = 1000)
+```
+
+Let's compare the models and see which one worked better.
+```{r model_compare}
+basic_model
+tuned_model
+```
+
+It appears as though the tuned model worked better. The tuned model has an accuracy of `r round(tuned_model$results[[2]], 4)*100`%, whereas the basic model has an accuracy of `r round(basic_model$results[[2]][1], 4)*100`%. Moreover, the tuned model has a lower out-of-bag error rate of 0.61% than the basic model (out-of-bag error rate of 0.81%).  
+
+Overall, it appears as though the tuned model might be better for a final model, but its performance could just be a result of overfitting. To check this, we can apply both models to the test set and see which one performs better.
+
+```{r test_set}
+pred_basic <- predict(basic_model, test_data)
+pred_tuned <- predict(tuned_model, test_data)
+
+
+conf_mat_basic <- confusionMatrix(pred_basic, test_data$classe)
+conf_mat_tuned <- confusionMatrix(pred_tuned, test_data$classe)
+
+conf_mat_basic
+conf_mat_tuned
+```
+
+We can see that even with the test set, the tuned model (accuracy = `r round(conf_mat_tuned$overall[[1]],4)*100`%) 
+outperforms the basic, default model (accuracy = `r round(conf_mat_basic$overall[[1]],4)*100`%). We can apply the tuned model to a final validation set and see how well it performs.
+
+```{r validation_set}
+final_pred <- predict(tuned_model, validation_data)
+conf_mat_final <- confusionMatrix(final_pred, validation_data$classe) 
+conf_mat_final
+```
+
+Within the final validation set, the chosen model performs with `r round(conf_mat_final$overall[[1]],4)*100`% accuracy.  
+
+Therefore, the tuned model will be used to predict the classes for the final test set of 20 cases. 

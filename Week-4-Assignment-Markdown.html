@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+
+
+<title>Prediction Assignment Write-Up: Predicting the Method of Exercise</title>
+
+<script src="Week-4-Assignment-Markdown_files/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="Week-4-Assignment-Markdown_files/bootstrap-3.3.5/css/bootstrap.min.css" rel="stylesheet" />
+<script src="Week-4-Assignment-Markdown_files/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="Week-4-Assignment-Markdown_files/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="Week-4-Assignment-Markdown_files/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="Week-4-Assignment-Markdown_files/navigation-1.1/tabsets.js"></script>
+<link href="Week-4-Assignment-Markdown_files/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="Week-4-Assignment-Markdown_files/highlightjs-9.12.0/highlight.js"></script>
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+</style>
+
+
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">Prediction Assignment Write-Up: Predicting the Method of Exercise</h1>
+
+</div>
+
+
+<div id="synopsis" class="section level2">
+<h2>Synopsis</h2>
+<p>The data used in this project are from <a href="http://web.archive.org/web/20161224072740/http:/groupware.les.inf.puc-rio.br/har">this website</a>. Six participants were told to perform a bicep curl in five different ways:</p>
+<ol style="list-style-type: decimal">
+<li><p>Completely correctly, according to the instructions given <em>(Class A)</em></p></li>
+<li><p>Throwing their elbows forward <em>(Class B)</em></p></li>
+<li><p>Lifting the dumbell only halfway <em>(Class C)</em></p></li>
+<li><p>Lowering the dumbell only halfway <em>(Class D)</em></p></li>
+<li><p>Throwing their hips forward <em>(Class E)</em></p></li>
+</ol>
+<p>The goal of this project was to build a model that would correctly predict which class of exercise (“classe” in the data set) was being performed based on the information collected by the sensors participants were wearing on different parts of their body.</p>
+</div>
+<div id="initial-setup-and-downloading-of-data" class="section level2">
+<h2>Initial setup and downloading of data</h2>
+<p>First, we need to load the packages necessary for data processing and visualization and check the data.</p>
+<pre class="r"><code>library(tidyverse)
+library(caret)</code></pre>
+<pre class="r"><code>full_data_set &lt;- read.csv(&#39;pml-training.csv&#39;, na.strings = c(&quot;NA&quot;, &quot;#DIV/0!&quot;))
+
+dim(full_data_set) </code></pre>
+<pre><code>## [1] 19622   160</code></pre>
+<p>The data set contains 19622 data points, with 160 columns. The last column, “classe” is the one we are hoping to predict. Most of the other columns appear to contain sensor information.</p>
+<pre class="r"><code>length(unique(full_data_set$X)) </code></pre>
+<pre><code>## [1] 19622</code></pre>
+<pre class="r"><code>unique(full_data_set$user_name)</code></pre>
+<pre><code>## [1] carlitos pedro    adelmo   charles  eurico   jeremy  
+## Levels: adelmo carlitos charles eurico jeremy pedro</code></pre>
+<p>This shows us that the X column is just a unique trial number; this does not contain information that would be helpful in a prediction model. In addition, the user_name variable refers to the identities of the six participants. Again, this information would not be helpful in predicting classes of exercise. These two columns can be removed. Finally, the next five columns contain information about trial time, which should not be stringly related to the type of exercise performed. These columns can all be removed from the data set.</p>
+<pre class="r"><code>data_set_cols_rm &lt;- full_data_set[,8:ncol(full_data_set)]
+dim(data_set_cols_rm)</code></pre>
+<pre><code>## [1] 19622   153</code></pre>
+<p>Of the columns left, many of them appear to contain NA values. Given that there are 153 columns, it might be useful to remove those that contain mostly NA values, as they won’t be helpful for the final model.</p>
+<pre class="r"><code>na_vals &lt;- sapply(data_set_cols_rm, function(x) sum(is.na(x)))
+unname(na_vals) ## total number of NA values in each column</code></pre>
+<pre><code>##   [1]     0     0     0     0 19226 19248 19622 19225 19248 19622 19216
+##  [12] 19216 19226 19216 19216 19226 19216 19216 19226 19216 19216 19216
+##  [23] 19216 19216 19216 19216 19216 19216 19216     0     0     0     0
+##  [34]     0     0     0     0     0     0     0     0     0 19216 19216
+##  [45] 19216 19216 19216 19216 19216 19216 19216 19216     0     0     0
+##  [56]     0     0     0     0     0     0 19294 19296 19227 19293 19296
+##  [67] 19227 19216 19216 19216 19216 19216 19216 19216 19216 19216     0
+##  [78]     0     0 19221 19218 19622 19220 19217 19622 19216 19216 19221
+##  [89] 19216 19216 19221 19216 19216 19221     0 19216 19216 19216 19216
+## [100] 19216 19216 19216 19216 19216 19216     0     0     0     0     0
+## [111]     0     0     0     0     0     0     0 19300 19301 19622 19299
+## [122] 19301 19622 19216 19216 19300 19216 19216 19300 19216 19216 19300
+## [133]     0 19216 19216 19216 19216 19216 19216 19216 19216 19216 19216
+## [144]     0     0     0     0     0     0     0     0     0     0</code></pre>
+<pre class="r"><code>## Lots of columns have more than 19000 NA values
+## This is 97% of missing data in those columns and should probably be removed
+missingData_df &lt;- is.na(data_set_cols_rm)
+rm_cols &lt;- which(colSums(missingData_df) &gt; 19000)
+final_full_set &lt;- data_set_cols_rm[, -rm_cols]
+dim(final_full_set)</code></pre>
+<pre><code>## [1] 19622    53</code></pre>
+<p>This leaves us with 53 columns (52 predictors) to work with!</p>
+</div>
+<div id="splitting-the-data" class="section level2">
+<h2>Splitting the Data</h2>
+<p>First, we need to split the data. Here, I have chosen to split the data into a training set, a testing set, and a final validation set (80/20/20).</p>
+<pre class="r"><code>set.seed(33433)
+inBuild &lt;- createDataPartition(y = final_full_set$classe, p = .8, list = F)
+
+## create validation data set
+validation_data &lt;- final_full_set[-inBuild,]
+
+## create (temp) building data set
+buildData_set &lt;- final_full_set[inBuild,]
+## separate model building set into training and testing
+inTrain &lt;- createDataPartition(y = buildData_set$classe, p = .75, list = F)
+train_data &lt;- buildData_set[inTrain,]
+test_data &lt;- buildData_set[-inTrain,]
+
+## check final sets for numbers
+nrow(validation_data)</code></pre>
+<pre><code>## [1] 3923</code></pre>
+<pre class="r"><code>nrow(test_data)</code></pre>
+<pre><code>## [1] 3923</code></pre>
+<pre class="r"><code>nrow(train_data)</code></pre>
+<pre><code>## [1] 11776</code></pre>
+</div>
+<div id="model-building" class="section level2">
+<h2>Model Building</h2>
+<p>For this problem, I have chosen to use a random forest model, as these models are good for classification problems. First, we can start with a model that uses mostly default options.</p>
+<pre class="r"><code>set.seed(3433)
+basic_model &lt;- train(classe ~ ., method = &#39;rf&#39;, data = train_data,
+                     trControl = trainControl(method = &#39;cv&#39;),
+                     number = 3)</code></pre>
+<p>Next, we can build a tuned model. For this, we can adjust the mtry parameter (that is, the number of variables that are chosen at each node) and the ntree parameter (that is, the number of trees that are grown). For mtry, we can use the square root of the number of predictors (as demonstrated <a href="https://machinelearningmastery.com/tune-machine-learning-algorithms-in-r/">here</a>). For ntree, we can use 1000, which is double the default value (500) but won’t take too long to run.</p>
+<pre class="r"><code>tunegrid &lt;- expand.grid(.mtry=sqrt(ncol(train_data) - 1))
+trcontrol &lt;- trainControl(method=&quot;repeatedcv&quot;, number=10, repeats=3)
+set.seed(3433)
+tuned_model &lt;- train(classe ~ ., data = train_data, method = &#39;rf&#39;, 
+                     tuneGrid = tunegrid, 
+                     trControl = trcontrol, 
+                     ntree = 1000)</code></pre>
+<p>Let’s compare the models and see which one worked better.</p>
+<pre class="r"><code>basic_model</code></pre>
+<pre><code>## Random Forest 
+## 
+## 11776 samples
+##    52 predictor
+##     5 classes: &#39;A&#39;, &#39;B&#39;, &#39;C&#39;, &#39;D&#39;, &#39;E&#39; 
+## 
+## No pre-processing
+## Resampling: Cross-Validated (10 fold) 
+## Summary of sample sizes: 10598, 10599, 10597, 10599, 10599, 10599, ... 
+## Resampling results across tuning parameters:
+## 
+##   mtry  Accuracy  Kappa
+##    2    0.99      0.99 
+##   27    0.99      0.99 
+##   52    0.99      0.98 
+## 
+## Accuracy was used to select the optimal model using the largest value.
+## The final value used for the model was mtry = 2.</code></pre>
+<pre class="r"><code>tuned_model</code></pre>
+<pre><code>## Random Forest 
+## 
+## 11776 samples
+##    52 predictor
+##     5 classes: &#39;A&#39;, &#39;B&#39;, &#39;C&#39;, &#39;D&#39;, &#39;E&#39; 
+## 
+## No pre-processing
+## Resampling: Cross-Validated (10 fold, repeated 3 times) 
+## Summary of sample sizes: 10598, 10599, 10597, 10599, 10599, 10599, ... 
+## Resampling results:
+## 
+##   Accuracy  Kappa
+##   0.99      0.99 
+## 
+## Tuning parameter &#39;mtry&#39; was held constant at a value of 7.2</code></pre>
+<p>It appears as though the tuned model worked better. The tuned model has an accuracy of 99.21%, whereas the basic model has an accuracy of 99.1%. Moreover, the tuned model has a lower out-of-bag error rate of 0.61% than the basic model (out-of-bag error rate of 0.81%).</p>
+<p>Overall, it appears as though the tuned model might be better for a final model, but its performance could just be a result of overfitting. To check this, we can apply both models to the test set and see which one performs better.</p>
+<pre class="r"><code>pred_basic &lt;- predict(basic_model, test_data)
+pred_tuned &lt;- predict(tuned_model, test_data)
+
+
+conf_mat_basic &lt;- confusionMatrix(pred_basic, test_data$classe)
+conf_mat_tuned &lt;- confusionMatrix(pred_tuned, test_data$classe)
+
+conf_mat_basic</code></pre>
+<pre><code>## Confusion Matrix and Statistics
+## 
+##           Reference
+## Prediction    A    B    C    D    E
+##          A 1116    3    0    0    0
+##          B    0  754    7    0    0
+##          C    0    2  675   14    3
+##          D    0    0    2  629    4
+##          E    0    0    0    0  714
+## 
+## Overall Statistics
+##                                         
+##                Accuracy : 0.991         
+##                  95% CI : (0.988, 0.994)
+##     No Information Rate : 0.284         
+##     P-Value [Acc &gt; NIR] : &lt;2e-16        
+##                                         
+##                   Kappa : 0.989         
+##                                         
+##  Mcnemar&#39;s Test P-Value : NA            
+## 
+## Statistics by Class:
+## 
+##                      Class: A Class: B Class: C Class: D Class: E
+## Sensitivity             1.000    0.993    0.987    0.978    0.990
+## Specificity             0.999    0.998    0.994    0.998    1.000
+## Pos Pred Value          0.997    0.991    0.973    0.991    1.000
+## Neg Pred Value          1.000    0.998    0.997    0.996    0.998
+## Prevalence              0.284    0.193    0.174    0.164    0.184
+## Detection Rate          0.284    0.192    0.172    0.160    0.182
+## Detection Prevalence    0.285    0.194    0.177    0.162    0.182
+## Balanced Accuracy       0.999    0.996    0.990    0.988    0.995</code></pre>
+<pre class="r"><code>conf_mat_tuned</code></pre>
+<pre><code>## Confusion Matrix and Statistics
+## 
+##           Reference
+## Prediction    A    B    C    D    E
+##          A 1115    3    0    0    0
+##          B    1  753    7    0    0
+##          C    0    3  677    7    2
+##          D    0    0    0  636    6
+##          E    0    0    0    0  713
+## 
+## Overall Statistics
+##                                         
+##                Accuracy : 0.993         
+##                  95% CI : (0.989, 0.995)
+##     No Information Rate : 0.284         
+##     P-Value [Acc &gt; NIR] : &lt;2e-16        
+##                                         
+##                   Kappa : 0.991         
+##                                         
+##  Mcnemar&#39;s Test P-Value : NA            
+## 
+## Statistics by Class:
+## 
+##                      Class: A Class: B Class: C Class: D Class: E
+## Sensitivity             0.999    0.992    0.990    0.989    0.989
+## Specificity             0.999    0.997    0.996    0.998    1.000
+## Pos Pred Value          0.997    0.989    0.983    0.991    1.000
+## Neg Pred Value          1.000    0.998    0.998    0.998    0.998
+## Prevalence              0.284    0.193    0.174    0.164    0.184
+## Detection Rate          0.284    0.192    0.173    0.162    0.182
+## Detection Prevalence    0.285    0.194    0.176    0.164    0.182
+## Balanced Accuracy       0.999    0.995    0.993    0.994    0.994</code></pre>
+<p>We can see that even with the test set, the tuned model (accuracy = 99.26%) outperforms the basic, default model (accuracy = 99.11%). We can apply the tuned model to a final validation set and see how well it performs.</p>
+<pre class="r"><code>final_pred &lt;- predict(tuned_model, validation_data)
+conf_mat_final &lt;- confusionMatrix(final_pred, validation_data$classe) 
+conf_mat_final</code></pre>
+<pre><code>## Confusion Matrix and Statistics
+## 
+##           Reference
+## Prediction    A    B    C    D    E
+##          A 1116    4    0    0    0
+##          B    0  750    3    0    0
+##          C    0    5  680    7    2
+##          D    0    0    1  636    4
+##          E    0    0    0    0  715
+## 
+## Overall Statistics
+##                                        
+##                Accuracy : 0.993        
+##                  95% CI : (0.99, 0.996)
+##     No Information Rate : 0.284        
+##     P-Value [Acc &gt; NIR] : &lt;2e-16       
+##                                        
+##                   Kappa : 0.992        
+##                                        
+##  Mcnemar&#39;s Test P-Value : NA           
+## 
+## Statistics by Class:
+## 
+##                      Class: A Class: B Class: C Class: D Class: E
+## Sensitivity             1.000    0.988    0.994    0.989    0.992
+## Specificity             0.999    0.999    0.996    0.998    1.000
+## Pos Pred Value          0.996    0.996    0.980    0.992    1.000
+## Neg Pred Value          1.000    0.997    0.999    0.998    0.998
+## Prevalence              0.284    0.193    0.174    0.164    0.184
+## Detection Rate          0.284    0.191    0.173    0.162    0.182
+## Detection Prevalence    0.285    0.192    0.177    0.163    0.182
+## Balanced Accuracy       0.999    0.994    0.995    0.994    0.996</code></pre>
+<p>Within the final validation set, the chosen model performs with 99.34% accuracy.</p>
+<p>Therefore, the tuned model will be used to predict the classes for the final test set of 20 cases.</p>
+</div>
+
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
